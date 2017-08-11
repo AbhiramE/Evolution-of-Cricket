@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+
+    <meta content="utf-8" http-equiv="encoding">
+    <title>Interactive Visualizations</title>
+
+    <script type="text/javascript" src="../static/js/crossfilter.js"></script>
+    <script type="text/javascript" src="../static/js/d3.js" charset="utf-8"></script>
+    <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+    <script type="text/javascript" src="http://d3js.org/queue.v1.min.js"></script>
+    <script src='../static/js/jquery-1.9.1.min.js' type='text/javascript'></script>
+    <script src='../static/js/bootstrap.min.js' type='text/javascript'></script>
+    <script type="text/javascript" src="../static/js/dc.js"></script>
+    <link href='../static/css/bootstrap.min.css' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="../static/css/dc.css"/>
+     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Oswald">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open Sans">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+
+
+    <style>
+        .navbar-fixed-left {
+            width: 140px;
+            position: fixed;
+            border-radius: 0;
+            height: 100%;
+            color: #0e0e0e;
+        }
+
+        .navbar-fixed-left .navbar-nav > li {
+            float: none;  /* Cancel default li float: left */
+            width: 139px;
+        }
+
+        .navbar-fixed-left + .container {
+            padding-left: 160px;
+        }
+
+        #sidebar {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            background-color: #000000;
+            color: white;
+            height: 100%;
+            position: fixed;
+            overflow: auto;
+        }
+        #dc-batsmen-runs-chart {
+        pointer-events: none;
+        }
+
+         h1, h2, h3, h4, h5, h6 {
+            font-family: "Oswald"
+        }
+
+        #header{
+            width: 30%;
+            margin: 0 auto;
+        }
+
+        #overview{
+            font-size: 14px;
+        }
+
+
+         #inline-horizontal-left{
+            font-size: 12px;
+             width: 40%;
+             float: left;
+        }
+
+         #inline-horizontal-right{
+            font-size: 12px;
+             width: 40%;
+             float: right;
+        }
+
+         #inline-horizontal{
+            font-size: 12px;
+        }
+
+        #tip{
+            font-size: 10px;
+            float: right;
+        }
+
+         #inline {
+            float: left;
+            width: 200px;
+            font-size: 12px;
+        }
+
+    </style>
+
+    <link href='../static/css/style.css' rel='stylesheet' type='text/css'>
+</head>
+
+<body>
+
+<div id="exTab3" class="container">
+    <div class="container"><h2>Evolution of Cricket</h2></div>
+    <ul  class="nav nav-tabs">
+        <li>
+            <a href="index.html" >Teams</a>
+        </li>
+        <li><a href="indexBowlers.html">Bowlers</a>
+        </li>
+        <li class="active"><a href="#">Batsmen</a>
+        </li>
+    </ul>
+</div>
+
+<div class="navbar navbar-inverse navbar-fixed-left" id="sidebar">
+    <ul class="nav navbar-nav">
+        <li><a href="#dc-batsmen-series-chart">1. Averages in a Team</a></li>
+        <li><a href="#dc-batsmen-average-chart">2. Batsmen performance</a></li>
+        <li>
+            <a href="#dc-batsmen-striker-chart">3. Striker Rates over the years</a>
+        </li>
+        <li><a href="#dc-batsmen-runs-chart">4. Batsmen runs in a calender</a></li>
+    </ul>
+
+    <button type="button" class="btn" onclick="updateData()">Reset All Visualizations</button>
+</div>
+
+<div class='container' id='main-container'>
+    <div class='content'>
+
+        <div class="section-intro-content">
+                <header class="w3-container w3-center w3-padding-48 w3-white">
+                    <h2 class="w3-xxxlarge" id="header"><b>Overview</b></h2>
+                    <p id="overview">Ever since the advent of T20 cricket the gentleman's hasn't been gentle on the bowlers.
+                    Thicker bats, shorter boundaries, multiple power-plays, free hits, switch hits and all in all the
+                        audacity to chase down impossible targets has undeniably changed the game of cricket. The visualizations
+                        presented here tells you the evolution of the Gentleman's game to Power hitters' game.
+
+                        <br>
+                        <br>
+
+                        We look at the following in particular,
+
+                        <ul style="font-size: 14px">
+                            <li> We look at time-wise Average scores and observe the number of 300 plus scores made over
+                            the years. We also observe the team wise run rates over the years. The percentage of matches going
+                            over 300 with a run rate greater than 6 is alarmingly high.</li>
+                            <li> The batsmen have been proportionally scoring at a higher striker rate.
+                                We also see the rise of power hitters who have very good strike rates but lesser averages like
+                            David Miller and Kedhar Jadav </li>
+                            <li>The economy of bowlers have increased. The changes have been cruel on the bowlers
+                                and that reflects on the average economy rates.
+                            </li>
+                </ul>
+                    </p>
+                </header>
+            </div>
+
+        <div class='row'>
+            <div class='span12'>
+                <div class='row'>
+                    <h3>Best run scorers for each team</h3>
+                    <p id="inline"> The roles of batsmen coming at position 5 and 6 in one day cricket
+                    have changed. They are no more a irrelevant confused lot masquerading as all rounders.
+                        Players like Anderson for New Zealand, James Faulkner for Australia and Kedhar Jadav for India
+                        have defined power hitting with Striker rates in the 130s. Most of the the batsmen have their
+                        strike rates in the higher 80s with the top batsmen having their averages peppered around 45.</p>
+                    <div class='pie-graph span6' id='dc-batsmen-series-chart'>
+                         <p id="tip">Tip: Hover on the legends or the points for player info.</p>
+                    </div>
+                </div>
+                <div class='row'>
+                    <h4>Performance of the best batsmen over the years
+                        <span style="display:inline-block; width: 200px;"></span>
+                        Strike rates of batsmen over the years</h4>
+                    <p id="inline-horizontal-left"> The changing rules however has done a world of good to the confidence
+                        of batsmen. They are fearless in their approaches. The audacity to come up with the ramp shots, hoick
+                        over the infield and slog it over the midwicket to release pressure piled on by dot balls has
+                        helped top players maintain a consistent performance over the years. Players like Mr.360 degrees,
+                        Ab De Villiers, Virat Kohli and MS Dhoni have gone on to become the stalwarts of the modern game
+                        over the past decade. The below graph is a reflection of the same.
+                    </p>
+                    <p id="inline-horizontal-right"> As a result, the strike rates of batsmen have crept up over 90s.
+                    It is evident in the way the players typically approach their innings, with openers making the
+                    best of the field restrictions and scoring at a high rate, middle order biding their time
+                    in the middle with quick singles and twos and accelerating at the end of the innings with the big shots
+                        and power hitters doing their job. This is reflected in the strike rates going above 90 for all batsmen
+                    over the world in the past 4 years.</p>
+                    <div class='pie-graph span6' id='dc-batsmen-average-chart'>
+                         <p id="tip">Tip: Hover on the legends to get a clear picture</p>
+                    </div>
+                    <span></span>
+                    <span></span>
+                    <div class='pie-graph span6' id='dc-batsmen-striker-chart'>
+                         <p id="tip">Tip: Click bars to select and hover for more information</p>
+                    </div>
+                </div>
+                <div class='row'>
+                    <div style="left:0;">
+                    <h3>Player performance over the years</h3>
+                    <p id="inline-horizontal"> The best batsmen have been consistent in their performance
+                        by adapting their game to changing rules and demands. Dhoni's ability to covert toe
+                        crushing yorkers to helicopter shots or Eion Morgan's paddled scoops over fine leg are few
+                        examples of how the best have adapted their game. The batsmen listed below show consistent run
+                        scoring abilities for the past
+                    decade. </p>
+                    <div style="left:0;">
+                        <p id="tip">Tip: Select player from the drop down.</p>
+                    </div>
+                        <select id="batsmanDropDown">
+                            <option value="0">Sangakkara</option>
+                            <option value="1">AbD</option>
+                            <option value="2">Kohli</option>
+                            <option value="3">Dhoni</option>
+                            <option value="4">Amla</option>
+                            <option value="5">Guptill</option>
+                            <option value="6">Rohit Sharma</option>
+                            <option value="7">Eion Morgon</option>
+                            <option value="8">Brendon McCullum</option>
+                            <option value="9">Mohammad Hafeez</option>
+                        </select>
+                    </div>
+                    <div class='pie-graph span6' id='dc-batsmen-runs-chart'>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    /**********************************
+     * Step0: Load data1 from json file *
+     **********************************/
+    var q = queue().defer(d3.json, "/batsmen/projects");
+
+    /******************************************************
+     * Step1: Create the dc.js chart objects & ling to div *
+     ******************************************************/
+    var batsmanAverageChart = dc.seriesChart("#dc-batsmen-series-chart");
+    var batsmanYearAverageChart = dc.compositeChart("#dc-batsmen-average-chart");
+    var batsmanStrikeAverageChart = dc.barChart("#dc-batsmen-striker-chart");
+    var batsmanRunsChart =dc.barChart("#dc-batsmen-runs-chart");
+
+    // load data1 from a csv file
+    q.await(function(error, data){
+
+        data.forEach(function (d) {
+            d["Ave"] = +d["Ave"];
+            d["SR"] = +d["SR"];
+            d["RunsDescending"] = +d["RunsDescending"];
+        });
+
+        var facts = crossfilter(data);
+
+        var teams = ["AUS", "BDESH", "ENG", "INDIA", "NZ", "PAK", "SA", "SL", "WI", "ZIM", "IRE"];
+
+        /**
+         *  For the scatter plot
+         * **/
+
+        function remove_unwanted_teams(source_group) {
+            return {
+                all:function () {
+                    return source_group.all().filter(function(d) {
+                        return teams.indexOf(d.key[0]) >=0 && d.value.count >0;
+                    });
+                }
+            };
+        }
+
+        function reduceAddWickets(p, v) {
+            ++p.count;
+            p.sr += v["SR"];
+            p.ave += v["Ave"];
+            return p;
+        }
+
+        function reduceRemoveWickets(p, v) {
+            --p.count;
+            p.sr -= v["SR"];
+            p.ave-= v["Ave"];
+            return p;
+        }
+
+        function reduceInitialWickets() {
+            return {ave: 0, sr: 0, count:0};
+        }
+
+        var wicketsDimension = facts.dimension(function (d) {
+            return [d["Team"],d["Player"]];
+        });
+        var wicketsGroup = wicketsDimension.group().reduce(reduceAddWickets, reduceRemoveWickets,
+            reduceInitialWickets);
+
+        wicketsGroup = remove_unwanted_teams(wicketsGroup);
+
+        var subChart = function(c) {
+            return dc.scatterPlot(c)
+                .brushOn(true)
+                .excludedOpacity(0.2);
+        };
+
+        batsmanAverageChart
+            .width(768)
+            .height(430)
+            .chart(subChart)
+            .x(d3.scale.ordinal().domain(teams))
+            .xUnits(dc.units.ordinal)
+            .yAxisLabel("Average")
+            .xAxisLabel("Teams")
+            .clipPadding(10)
+            .dimension(wicketsDimension)
+            .group(wicketsGroup)
+            .seriesAccessor(function(d) {return "SR " + Math.round( d.value.sr/(d.value.count *10))*10;})
+            .keyAccessor(function(d) {return d.key[0];})
+            .valueAccessor(function(d) {
+                return d.value.ave/d.value.count;})
+            .legend(dc.legend().x(700).y(50).itemHeight(13).gap(5).legendWidth(140).itemWidth(70))
+            .title(function (d) {
+                return d.key[1] + "\n" +
+                    "Average " + d.value.ave/d.value.count + "\n" +
+                    "Team " + d.key[0]+ "\n";
+            });
+        batsmanAverageChart.yAxis().tickFormat(function(d) {return d3.format(',d')(d);});
+        batsmanAverageChart.margins().left += 10;
+
+
+
+
+        /**
+         * For the line chart
+         * **/
+
+        var players = ["KC Sangakkara","AB de Villiers","V Kohli", "MS Dhoni", "HM Amla",
+        "MJ Guptill","RG Sharma","EJG Morgan","BB McCullum","Mohammad Hafeez"];
+
+
+        function remove_unwanted_players(source_group, player) {
+            return {
+                all:function () {
+                    return source_group.all().filter(function(d) {
+                        return d.key[1] ==player;
+                    });
+                }
+            };
+        }
+
+        function remove_unwanted_seasons(source_group) {
+            return {
+                all:function () {
+                    return source_group.all().filter(function(d) {
+                        return d.key[0] != seasons[0];
+                    });
+                }
+            };
+        }
+
+        var yearDimension = facts.dimension(function (d) {
+            return [d["Season"],d["Player"],d["Ave"]];
+        });
+        var yearGroup = yearDimension.group();
+
+        yearGroup = remove_unwanted_seasons(yearGroup);
+
+        var seasons = ["2006/07","2007/08", "2008/09", "2009/10", "2010/11", "2011/12", "2012/13", "2013/14", "2014/15",
+            "2015/16", "2016/17"];
+
+        var sub_seasons = ["2007/08", "2008/09", "2009/10", "2010/11", "2011/12", "2012/13", "2013/14", "2014/15",
+            "2015/16", "2016/17"];
+
+        var colors =["#1abc9c", "#2ecc71",
+            "#3498db", "#9b59b6", "#16a085", "#27ae60",
+            "#2980b9", "#8e44ad", "#2c3e50", "#f1c40f", "#d35400"];
+
+        batsmanYearAverageChart
+            .width(500)
+            .height(410)
+            .x(d3.scale.ordinal().domain(sub_seasons))
+            .xUnits(dc.units.ordinal)
+            .margins({top: 10, right: 10, bottom: 30, left: 40})
+            .yAxisLabel("Average")
+            .xAxisLabel("Seasons")
+            .legend(dc.legend().x(80).y(20).itemHeight(13).gap(5))
+            .renderHorizontalGridLines(true)
+            .compose(players.map(function (player, i) {
+                var newGroup = remove_unwanted_players(yearGroup, player);
+                return dc.lineChart(batsmanYearAverageChart)
+                    .dimension(yearDimension)
+                    .colors(colors[i])
+                    .group(newGroup, player)
+                    .keyAccessor(function (d) {
+                        return d.key[0];
+                    })
+                    .valueAccessor(function (d) {
+                        return d.key[2];
+                    });
+            }))
+            .brushOn(false)
+            .render();
+
+        /**
+         * Bar Chart of Strike Rates
+         * **/
+        function reduceAdd(p, v) {
+            ++p.count;
+            p.total += v["SR"];
+            return p;
+        }
+
+        function reduceRemove(p, v) {
+            --p.count;
+            p.total -= v["SR"];
+            return p;
+        }
+
+        function reduceInitial() {
+            return {count: 0, total: 0};
+        }
+
+        var strikeDimension = facts.dimension(function (d) {
+            return d["Season"] ;       // group or filter by Month
+        });
+        var strikeGroup =
+            strikeDimension.group().reduce(reduceAdd, reduceRemove, reduceInitial);
+
+        batsmanStrikeAverageChart
+            .width(520)
+            .height(410)
+            .dimension(strikeDimension)
+            .x(d3.scale.ordinal().domain(seasons))
+            .xUnits(dc.units.ordinal)
+            .margins({top: 10, right: 10, bottom: 30, left: 30})
+            .brushOn(true)
+            .group(strikeGroup)
+            .valueAccessor(function(p) {
+                return p.value.count > 0 ? p.value.total / p.value.count : 0; })
+            .colors(d3.scale.ordinal().domain(seasons).range(["#e5efe5", "#CCE0CC", "#b2d0b2", "#99c199",
+                "#7fb17f", "#66a266", "#4c924c", "#328332",
+                "#197319", "#006400","#004600"]))
+            .colorAccessor(function (d) {
+
+                if (seasons.indexOf(d.key) > -1) {
+                console.log(seasons.indexOf(d.key), d.key);
+                return seasons.indexOf(d.key);
+            }
+            })
+            .yAxisLabel("Average Strike Rate")
+            .xAxisLabel("Seasons")
+            .gap(1)
+            .elasticY(true)
+            .calculateColorDomain();
+
+        var runsDimension = facts.dimension(function (d) {
+            return [d["Season"],d["Player"],d["RunsDescending"]];
+        });
+        var runsGroup = runsDimension.group();
+
+        runsGroup = remove_unwanted_seasons(runsGroup);
+        var newRunsGroup = remove_unwanted_players(runsGroup, "KC Sangakkara");
+
+        batsmanRunsChart
+            .width(968)
+            .height(210)
+            .dimension(runsDimension)
+            .x(d3.scale.ordinal().domain(seasons))
+            .xUnits(dc.units.ordinal)
+            .margins({top: 10, right: 10, bottom: 40, left: 40})
+            .group(newRunsGroup)
+            .keyAccessor(function (p) {
+                return p.key[0];
+            })
+            .valueAccessor(function(p) {
+                return p.key[2]})
+            .transitionDuration(500)
+            .renderlet(function(chart){
+                var colors =d3.scale.ordinal().domain([0,1,2,3,4,5,6,7,8,9,10])
+                    .range(["#e5e5ff","#ccccff","#b2b2ff","#9999ff","#7f7fff","#6666ff","#4c4cff"
+                    ,"#3232ff", "#1919ff"]);
+                chart.selectAll('rect.bar').each(function(d){
+                    d3.select(this).attr("style", "fill: " + colors(d.x));
+                });
+            })
+            .yAxisLabel("Runs")
+            .xAxisLabel("Seasons")
+            .gap(1)
+            .elasticY(true);
+
+        function rerender_runsChart(group) {
+            batsmanRunsChart
+                .width(968)
+                .height(210)
+                .dimension(runsDimension)
+                .x(d3.scale.ordinal().domain(seasons))
+                .xUnits(dc.units.ordinal)
+                .margins({top: 10, right: 10, bottom: 40, left: 40})
+                .group(group)
+                .keyAccessor(function (p) {
+                    return p.key[0];
+                })
+                .valueAccessor(function(p) {
+                    return p.key[2]})
+                .transitionDuration(500)
+                .renderlet(function(chart){
+                    var colors =d3.scale.ordinal().domain([0,1,2,3,4,5,6,7,8,9,10])
+                        .range(["#e5e5ff","#ccccff","#b2b2ff","#9999ff","#7f7fff","#6666ff","#4c4cff"
+                    ,"#3232ff", "#1919ff","#0000e5","#0000cc"]);
+                    chart.selectAll('rect.bar').each(function(d){
+                        d3.select(this).attr("style", "fill: " + colors(d.x));
+                    });
+                })
+                .yAxisLabel("Runs")
+                .xAxisLabel("Seasons")
+                .gap(1)
+                .elasticY(true);
+        }
+
+
+        dc.renderAll();
+
+        d3.select('#batsmanDropDown').on('change', function(d){
+            var value = d3.select("#batsmanDropDown").node().value;
+            console.log(value);
+            var group = remove_unwanted_players(runsGroup, players[value]);
+            rerender_runsChart(group);
+            dc.renderAll();
+        });
+
+    });
+
+
+    function updateData() {
+        dc.filterAll();
+        dc.renderAll();
+    }
+
+</script>
+
+</body>
+</html>

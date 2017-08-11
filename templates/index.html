@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+
+    <meta content="utf-8" http-equiv="encoding">
+    <title>Interactive Visualizations</title>
+
+    <script type="text/javascript" src="../static/js/crossfilter.js"></script>
+    <script type="text/javascript" src="../static/js/d3.js" charset="utf-8"></script>
+    <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+    <script type="text/javascript" src="http://d3js.org/queue.v1.min.js"></script>
+    <script src='../static/js/jquery-1.9.1.min.js' type='text/javascript'></script>
+    <script src='../static/js/bootstrap.min.js' type='text/javascript'></script>
+    <script type="text/javascript" src="../static/js/dc.js"></script>
+    <link href='../static/css/bootstrap.min.css' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="../static/css/dc.css"/>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Oswald">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open Sans">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+
+    <style>
+        .navbar-fixed-left {
+            width: 140px;
+            position: fixed;
+            border-radius: 0;
+            height: 100%;
+        }
+
+        .navbar-fixed-left .navbar-nav > li {
+            float: none; /* Cancel default li float: left */
+            width: 139px;
+        }
+
+        .navbar-fixed-left + .container {
+            padding-left: 160px;
+        }
+
+        #sidebar {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            background-color: #000000;
+            color: white;
+            height: 100%;
+            position: fixed;
+            overflow: auto;
+        }
+
+        #inline {
+            float: left;
+            width: 150px;
+            font-size: 12px;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: "Oswald"
+        }
+
+        #header{
+            width: 30%;
+            margin: 0 auto;
+        }
+
+        #overview{
+            font-size: 14px;
+        }
+
+        #inline-horizontal{
+            font-size: 12px;
+        }
+
+        #tip{
+            font-size: 10px;
+            float: right;
+        }
+    </style>
+    <link href='../static/css/style.css' rel='stylesheet' type='text/css'>
+</head>
+
+<body>
+
+<div class="container"><h2>Evolution of Cricket</h2></div>
+<div id="exTab3" class="container">
+    <ul class="nav nav-tabs">
+        <li class="active">
+            <a href="#">Teams</a>
+        </li>
+        <li><a href="indexBowlers.html">Bowlers</a>
+        </li>
+        <li><a href="indexBatsmen.html">Batsmen</a>
+        </li>
+    </ul>
+</div>
+<div class="navbar navbar-inverse navbar-fixed-left" id="sidebar">
+    <ul class="nav navbar-nav" style="color: #0e0e0e">
+        <li><a href="#dc-world-chart">1. World Cricket Map</a></li>
+        <li><a href="#dc-matches-chart">2. Cricket matches over the years</a></li>
+        <li><a href="#dc-runs-chart">3. Average Runs Over the years</a></li>
+        <li>
+            <a href="#dc-ranges-heatmap">4. Heatmap of runs</a>
+        </li>
+        <li><a href="#dc-runs-series-chart">5. Run rates over the years</a></li>
+    </ul>
+    <button type="button" class="btn" onclick="updateData()">Reset All Visualizations</button>
+</div>
+<div class='container' id='main-container'>
+    <div class="col-md-9" id="mainCol">
+        <div class='w3-content'>
+            <div class="section-intro-content">
+                <header class="w3-container w3-center w3-padding-48 w3-white">
+                    <h2 class="w3-xxxlarge" id="header"><b>Overview</b></h2>
+                    <p id="overview">Ever since the advent of T20 cricket the gentleman's hasn't been gentle on the bowlers.
+                    Thicker bats, shorter boundaries, multiple power-plays, free hits, switch hits and all in all the
+                        audacity to chase down impossible targets has undeniably changed the game of cricket. The visualizations
+                        presented here tells you the evolution of the Gentleman's game to Power hitters' game.
+
+                        <br>
+                        <br>
+
+                        We look at the following in particular,
+
+                        <ul style="font-size: 14px">
+                            <li> We look at time-wise Average scores and observe the number of 300 plus scores made over
+                            the years. We also observe the team wise run rates over the years. The percentage of matches going
+                            over 300 with a run rate greater than 6 is alarmingly high.</li>
+                            <li> The batsmen have been proportionally scoring at a higher striker rate.
+                                We also see the rise of power hitters who have very good strike rates but lesser averages like
+                            David Miller and Kedhar Jadav </li>
+                            <li>The economy of bowlers have increased. The changes have been cruel on the bowlers
+                                and that reflects on the average economy rates.
+                            </li>
+                </ul>
+                    </p>
+                </header>
+            </div>
+
+            <div class='row'>
+                <h3>Wins of Nations playing cricket</h3>
+                <p id="inline-horizontal"> With cricket spreading to associate countries teams like Afghanistan have progressed in the
+                    game while former giants like Zimbabwe and West Indies have lost their way. Australia
+                have held on their position of being the power houses of One day cricket with maximum wins,
+                with India and South Africa following close by. </p>
+                <p id="tip">Tip: Hover for information on wins and click to select</p>
+                <div class='pie-graph span6' id='dc-world-chart'>
+                </div>
+            </div>
+            <div class='row'>
+                <h3>Wins and Losses of Teams</h3>
+                <p id="inline"> The last 10 years have seen the rise and fall of teams with West Indies
+                and Zimbabwe falling behind. India with their World Cup and South Africa with their strong
+                performances away from home have strengthen their position as power houses of one day cricket
+                </p>
+                <div class='pie-graph span6' id='dc-matches-chart' style="float:left;">
+                    <p id="tip">Tip: Click bars to select and hover for number of losses</p>
+                </div>
+            </div>
+            <div class='row'>
+                <h3>Average runs scored by Teams</h3>
+                <p id="inline"> Teams have also improved their average run scored over the years. It is obvious
+                    that the best performing teams have the best average scores and this is evident by Australia,
+                    India and South Africa topping the charts. The teams lower in the ranking charts have lesser
+                    average scores.
+                </p>
+                <div class='pie-graph span6' id='dc-runs-chart'>
+                    <p id="tip">Tip: Click bars to select and hover for more information</p>
+                </div>
+
+            </div>
+            <div class='row'>
+                <h3>Runs scored by teams by Seasons</h3>
+                <p id="inline-horizontal"> The bats are the ones doing most of the talking. The number of scores
+                above 300 and even 400! have increased over the years. This echoes and complements the fact that
+                power plays, bigger bats and the whole shebang has brought about a revolution in the approach of teams
+                in chasing and setting targets.</p>
+                <div class='pie-graph span6' id='dc-ranges-heatmap'>
+                    <p id="tip">Tip: Click cells to select and hover for more information</p>
+                </div>
+            </div>
+            <div class='row'>
+                <div class='pie-graph span6' id='heatmapKey'>
+                </div>
+            </div>
+            <div class='row'>
+                <h3>Changing run-rate over the years</h3>
+                <p id="inline"> Teams are fearless in their approach.
+                As the data shows, its not just the story of winning teams scoring at alarming run rates,
+                    teams which score at a run rate of 6 and above also end up losing. This indicates
+                that larger scores are being chased down more frequently.</p>
+                <div class='pie-graph span6' id='dc-runs-series-chart'>
+                    <p id="tip">Hover on the legends for more information</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+
+    /**********************************
+     * Step0: Load data1 from json file *
+     **********************************/
+    var q = queue()
+        .defer(d3.json, "/match_details/projects")
+        .defer(d3.json, "../static/countries.geo.json");
+
+    // load data1 from a csv file
+    q.await(function (error, data, countriesData) {
+
+        data.forEach(function (d) {
+            d["Year"] = +d["Year"];
+            d["Runs"] = +d["Runs"];
+        });
+
+        var teams = ["Afghanistan", "Australia", "Bangladesh", "England", "India", "Ireland", "New Zealand",
+            "Pakistan", "South Africa", "Sri Lanka", "West Indies", "Zimbabwe"];
+
+        /******************************************************
+         * Step1: Create the dc.js chart objects & ling to div *
+         ******************************************************/
+        var matchesChart = dc.barChart("#dc-matches-chart");
+        var runsChart = dc.rowChart("#dc-runs-chart");
+        var runsHeatMap = dc.heatMap("#dc-ranges-heatmap");
+        var heatmapLegend = dc.heatMap("#heatmapKey");
+        var runsSeriesChart = dc.seriesChart("#dc-runs-series-chart");
+        var worldChart = dc.geoChoroplethChart("#dc-world-chart");
+
+        /****************************************
+         *    Run the data through crossfilter    *
+         ****************************************/
+
+        var facts = crossfilter();
+        facts.add(data);
+
+        function remove_unwanted_teams(source_group) {
+            return {
+                all: function () {
+                    return source_group.all().filter(function (d) {
+                        return teams.indexOf(d.key) >= 0;
+                    });
+                }
+            };
+        }
+
+
+        /******************************************************
+         * Create the Dimensions                               *
+         * A dimension is something to group or filter by.     *
+         * Crossfilter can filter by exact value, or by range. *
+         ******************************************************/
+        var dimension = facts.dimension(function (d) {
+            return d["Team"];
+        });
+
+        function reduceInitialWinsAndLosses() {
+            return {wins: 0, losses: 0};
+        }
+
+        function reduceAddWinsAndLosses(p, v) {
+            if (v["Result"] == "won")
+                p.wins += 1;
+            else if (v["Result"] == "lost")
+                p.losses += 1;
+            return p;
+        }
+
+        function reduceRemoveWinsAndLosses(p, v) {
+            if (v["Result"] == "won")
+                p.wins -= 1;
+            else if (v["Result"] == "lost")
+                p.losses -= 1;
+            return p;
+        }
+
+        var matches = dimension.group()
+            .reduce(reduceAddWinsAndLosses, reduceRemoveWinsAndLosses, reduceInitialWinsAndLosses);
+
+        matches = remove_unwanted_teams(matches);
+
+
+        function sel_stack(i) {
+            return function (d) {
+                if (i == "win")
+                    return d.value.wins;
+                else
+                    return d.value.losses;
+            };
+        }
+
+        matchesChart
+            .width(768)
+            .height(280)
+            .x(d3.scale.ordinal().domain(teams))
+            .xUnits(dc.units.ordinal)
+            .margins({left: 30, top: 20, right: 10, bottom: 20})
+            .dimension(dimension)
+            .elasticY(true)
+            .yAxisLabel("Number of matches")
+            .group(matches, "Losses", sel_stack('losses'))
+            .stack(matches, "Wins", sel_stack('win'));
+
+        matchesChart.legend(dc.legend().x(700).y(10));
+        dc.override(matchesChart, 'legendables', function () {
+            var items = matchesChart._legendables();
+            return items.reverse();
+        });
+
+        // For chart 2
+        function reduceRuns() {
+            return {count: 0, total: 0};
+        }
+
+        function reduceAddRuns(p, v) {
+            ++p.count;
+            p.total += v["Runs"];
+            return p;
+        }
+
+        function reduceRemoveRuns(p, v) {
+            --p.count;
+            p.total -= v["Runs"];
+            return p;
+        }
+
+        var dimensionRuns = facts.dimension(function (d) {
+            return d["Team"];
+        });
+
+        var averageRuns = dimensionRuns.group().reduce(reduceAddRuns, reduceRemoveRuns, reduceRuns);
+        averageRuns = remove_unwanted_teams(averageRuns);
+
+
+        runsChart.width(768)
+            .height(300)
+            .margins({top: 10, right: 10, bottom: 20, left: 30})	            // the values across the x axis
+            .group(averageRuns)
+            .elasticX(true)
+            .valueAccessor(function (p) {
+                return p.value.count > 0 ? p.value.total / p.value.count : 0;
+            })// the values on the y axis
+            .dimension(dimensionRuns)
+            .transitionDuration(500)
+            .colors(["#0000FF", "#ffbd33", "#006a4e", "#1f3057", "#0065BD", "#009E60", "#000000", "#008000",
+                "#006600", "#002664", "#B22222", "#FF8C00"])
+            .colorAccessor(function (d) {
+                console.log(teams.indexOf(d.key));
+                return teams.indexOf(d.key);
+            })
+            .calculateColorDomain();
+
+
+        /** For Visualition 3, the heat map */
+        function remove_unwanted_years(source_group) {
+            return {
+                all: function () {
+                    return source_group.all().filter(function (d) {
+                        return d.key[0] < 2017;
+                    });
+                }
+            };
+        }
+
+        var heatDimension = facts.dimension(function (d) {
+            return [d["Year"], d["Range"]];
+        });
+
+        var rangeCount = heatDimension.group().reduceCount(function (d) {
+            return d["Range"];
+        });
+
+        rangeCount = remove_unwanted_years(rangeCount);
+
+        runsHeatMap.width(40 * 23 + 80)
+            .height(35 * 5 + 40)
+            .margins({top: 10, right: 0, bottom: 20, left: 107})
+            .dimension(heatDimension)
+            .group(rangeCount)
+            .keyAccessor(function (d) {
+                return d.key[0];
+            })
+            .valueAccessor(function (d) {
+                return d.key[1];
+            })
+            .colorAccessor(function (d) {
+                if (d.value > 10) return 10 + (d.value) / 5;
+                return d.value;
+            })
+            .title(function (d) {
+                return "Score " + d.key[1] + "\n" +
+                    "Year:  " + d.key[0] + "\n" +
+                    "Number of Matches:  " + d.value + "\n";
+            })
+            .colors(["#e5e5ff", "#ccccff", "#b2b2ff", "#9999ff", "#7f7fff", "#6666ff", "#4c4cff"
+                , "#3232ff", "#1919ff", "#0000e5", "#0000cc"])
+            .calculateColorDomain();
+
+        var heatLegends = [];
+        for (var i = 0; i < 9; i++) {
+            if (i > 2) {
+                if (i == 8) {
+                    heatLegends.push({
+                        val: "Greater than " + ((i + 4) * (i + 4) + 10),
+                        index: i
+                    });
+                } else {
+                    heatLegends.push({
+                        val: "Matches less than " + ((i + 5) * (i + 5) + 10),
+                        index: i
+                    });
+                }
+            } else {
+                if (i == 2) {
+                    heatLegends.push({
+                        val: "Matches less than " + (((i + 1) * (i + 7)) + 5),
+                        index: i
+                    });
+                }
+                else {
+                    heatLegends.push({
+                        val: "Matches less than " + (((i + 1) * (i + 1)) + 5),
+                        index: i
+                    });
+                }
+            }
+        }
+
+        var new_facts = crossfilter(heatLegends);
+
+        var heatLegendDimension = new_facts.dimension(function (d) {
+            return [d.val, d.index];
+        });
+
+        var heatPostCount = heatLegendDimension.group().reduceSum(function (d) {
+            return d.index;
+        });
+
+        heatmapLegend.width(43 * 22 + 50)
+            .height(10 * 5 + 30)
+            .margins({top: 10, right: 0, bottom: 20, left: 70})
+            .dimension(heatLegendDimension)
+            .group(heatPostCount)
+            .keyAccessor(function (d) {
+                return d.key[0];
+            })
+            .valueAccessor(function (d) {
+                return "Densities"
+            })
+            .colorAccessor(function (d) {
+                return d.key[1];
+            })
+            .colors(["#e5e5ff", "#ccccff", "#b2b2ff", "#9999ff", "#7f7fff", "#6666ff", "#4c4cff"
+                , "#3232ff", "#1919ff", "#0000e5"])
+            .calculateColorDomain()
+            .ordering(function (d) {
+                return -d.key[1];
+            });
+
+        heatmapLegend.filter = function () {
+        };
+
+
+        /**
+         *  For the scatter plot
+         * **/
+        runDimension = facts.dimension(function (d) {
+            return [d["Result"], d["Year"], d["RPO"]];
+        });
+        runGroup = runDimension.group();
+        var subChart = function (c) {
+            return dc.scatterPlot(c)
+                .brushOn(false)
+                .excludedOpacity(0.2);
+        };
+
+        function remove_unwanted_match(source_group) {
+            return {
+                all: function () {
+                    return source_group.all().filter(function (d) {
+                        return d.key[2] > 6 && d.key[2] < 9.5;
+                    });
+                }
+            };
+        }
+
+        runGroup = remove_unwanted_match(runGroup);
+
+        runsSeriesChart
+            .width(768)
+            .height(480)
+            .chart(subChart)
+            .brushOn(false)
+            .x(d3.scale.linear().domain([2006, 2016]))
+            .yAxisLabel("Runs per over")
+            .xAxisLabel("Years")
+            .clipPadding(10)
+            .dimension(runDimension)
+            .group(runGroup)
+            .seriesAccessor(function (d) {
+                return "Result: " + d.key[0];
+            })
+            .keyAccessor(function (d) {
+                return +d.key[1];
+            })
+            .valueAccessor(function (d) {
+                return +d.key[2];
+            })
+            .legend(dc.legend().x(550).y(10).itemHeight(13).gap(10).horizontal(2).legendWidth(150).itemWidth(70));
+        runsSeriesChart.margins().left += 10;
+
+        var teamsDimension = facts.dimension(function (d) {
+            return d["Team"];
+        });
+
+        var teamGroup = teamsDimension.group()
+            .reduce(reduceAddWinsAndLosses, reduceRemoveWinsAndLosses, reduceInitialWinsAndLosses);
+
+        teamGroup = remove_unwanted_teams(teamGroup);
+
+        var projection = d3.geo.mercator()
+            .center([0, 40])
+            .scale(100)
+            .rotate([-12, 0]);
+
+        worldChart.width(1025)
+            .height(450)
+            .dimension(teamsDimension)
+            .group(teamGroup)
+            .colors(d3.scale.quantize().range(["#E2F2FF", "#C4E4FF", "#9ED2FF", "#81C5FF", "#6BBAFF", "#51AEFF",
+                "#36A2FF", "#1E96FF"]))
+            .colorDomain([0, 200])
+            .colorCalculator(function (d) {
+                return d ? worldChart.colors()(d) : '#ccc';
+            })
+            .overlayGeoJson(countriesData["features"], "Country", function (d) {
+                return d.properties.name;
+            })
+            .projection(projection)
+            .valueAccessor(function (kv) {
+                return kv.value.wins;
+            })
+            .title(function (kv) {
+                return "Country: " + kv.key + " " + (kv.value ? kv.value : 0) + " Wins";
+            });
+
+        dc.renderAll();
+
+    });
+
+    function updateData() {
+        dc.filterAll();
+        dc.renderAll();
+    }
+
+</script>
+
+</body>
+</html>

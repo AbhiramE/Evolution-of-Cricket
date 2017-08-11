@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+
+    <meta content="utf-8" http-equiv="encoding">
+    <title>Interactive Visualizations</title>
+
+    <script type="text/javascript" src="../static/js/crossfilter.js"></script>
+    <script type="text/javascript" src="../static/js/d3.js" charset="utf-8"></script>
+    <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+    <script type="text/javascript" src="http://d3js.org/queue.v1.min.js"></script>
+    <script src='../static/js/jquery-1.9.1.min.js' type='text/javascript'></script>
+    <script src='../static/js/bootstrap.min.js' type='text/javascript'></script>
+    <script type="text/javascript" src="../static/js/dc.js"></script>
+    <link href='../static/css/bootstrap.min.css' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="../static/css/dc.css"/>
+    <link href='../static/css/style.css' rel='stylesheet' type='text/css'>
+     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Oswald">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open Sans">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+
+    <style>
+        .navbar-fixed-left {
+            width: 140px;
+            position: fixed;
+            border-radius: 0;
+            height: 100%;
+            color: #0e0e0e;
+        }
+
+        .navbar-fixed-left .navbar-nav > li {
+            float: none;  /* Cancel default li float: left */
+            width: 139px;
+        }
+
+        .navbar-fixed-left + .container {
+            padding-left: 160px;
+        }
+
+
+        #sidebar {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            background-color: #000000;
+            color: white;
+            height: 100%;
+            position: fixed;
+            overflow: auto;
+        }
+
+        #dc-bowlers-wickets-chart{
+        pointer-events: none;
+        }
+
+         h1, h2, h3, h4, h5, h6 {
+            font-family: "Oswald"
+        }
+
+        #header{
+            width: 30%;
+            margin: 0 auto;
+        }
+
+        #overview{
+            font-size: 14px;
+        }
+
+         #inline-horizontal-left{
+            font-size: 12px;
+             width: 40%;
+             float: left;
+        }
+
+         #inline-horizontal-right{
+            font-size: 12px;
+             width: 40%;
+             float: right;
+        }
+
+         #inline-horizontal{
+            font-size: 12px;
+        }
+
+        #tip{
+            font-size: 10px;
+            float: right;
+        }
+
+         #inline {
+            float: left;
+            width: 200px;
+            font-size: 12px;
+        }
+
+    </style>
+
+    <link href='../static/css/style.css' rel='stylesheet' type='text/css'>
+</head>
+
+<body>
+
+<div class="container"><h2>Evolution of Cricket</h2></div>
+<div id="exTab3" class="container">
+    <ul  class="nav nav-tabs">
+        <li>
+            <a href="index.html" >Teams</a>
+        </li>
+        <li class="active"><a href="#">Bowlers</a>
+        </li>
+        <li><a href="indexBatsmen.html">Batsmen</a>
+        </li>
+    </ul>
+</div>
+
+<div class="navbar navbar-inverse navbar-fixed-left" id="sidebar">
+    <ul class="nav navbar-nav" >
+        <li><a href="#dc-bowlers-series-chart">1. Wicket takers in a Team</a></li>
+        <li><a href="#dc-bowlers-average-chart">2. Bowler Performance</a></li>
+        <li>
+            <a href="#dc-bowlers-striker-chart">3. Bowler Economy rate over the years</a>
+        </li>
+        <li><a href="#dc-bowlers-wickets-chart">4. Bowlers' wickets in a season</a></li>
+    </ul>
+
+     <button type="button" class="btn" onclick="updateData()">Reset All Visualizations</button>
+</div>
+
+<div class='container' id='main-container'>
+    <div class='content'>
+        <div class="section-intro-content">
+                <header class="w3-container w3-center w3-padding-48 w3-white">
+                    <h2 class="w3-xxxlarge" id="header"><b>Overview</b></h2>
+                    <p id="overview">Ever since the advent of T20 cricket the gentleman's hasn't been gentle on the bowlers.
+                    Thicker bats, shorter boundaries, multiple power-plays, free hits, switch hits and all in all the
+                        audacity to chase down impossible targets has undeniably changed the game of cricket. The visualizations
+                        presented here tells you the evolution of the Gentleman's game to Power hitters' game.
+
+                        <br>
+                        <br>
+
+                        We look at the following in particular,
+
+                        <ul style="font-size: 14px">
+                            <li> We look at time-wise Average scores and observe the number of 300 plus scores made over
+                            the years. We also observe the team wise run rates over the years. The percentage of matches going
+                            over 300 with a run rate greater than 6 is alarmingly high.</li>
+                            <li> The batsmen have been proportionally scoring at a higher striker rate.
+                                We also see the rise of power hitters who have very good strike rates but lesser averages like
+                            David Miller and Kedhar Jadav </li>
+                            <li>The economy of bowlers have increased. The changes have been cruel on the bowlers
+                                and that reflects on the average economy rates.
+                            </li>
+                </ul>
+                    </p>
+                </header>
+            </div>
+
+        <div class='row'>
+            <div class='span12'>
+                <div class='row'>
+                    <h3>Best wicket taker for each team</h3>
+                    <p id="inline"> Bowlers have taken the brunt of the changes in the game. But
+                    the changing game has brought about an evolution in bowling too. Newer variations in
+                    bowling like the knuckle ball, carrom ball and slower ball bouncers have emerged, which have
+                    been effective in curtailing runs and taking wickets. While the economy rates of the bowlers
+                    has taken a beating the wicket taking skills have proportionately improved.</p>
+                    <div class='pie-graph span6' id='dc-bowlers-series-chart'>
+                    <p id="tip">Tip: Hover on the legends or the points for player info.</p>
+                    </div>
+                </div>
+                <br>
+                <div class='row'>
+                    <h4>Performance of the best bowlers over the years
+                        <span style="display:inline-block; width: 260px;"></span>
+                        Economy rates of bowlers over the years</h4>
+                    <p id="inline-horizontal-left"> The best bowlers have stood the test of times. The chart
+                    below shows their performance over the years. Players like Malinga, Johnson and Steyn
+                    have been the spearhead of their attacks and have been feared by batsmen all over
+                    the world. The top bowlers have been fairly consistent conceding an average 30 runs
+                    per wicket. You can see their individual career graphs below.
+                    </p>
+                    <p id="inline-horizontal-right"> With increasing scores the stats of bowlers' economy
+                    rates have suffered. As the graph shows there is a steady increase in the trend of
+                    average economy rates of bowlers over the years. With 2017 an average bowler concedes 5 runs
+                        an over. With field restrictions in the power
+                    plays, bowlers are forced to bowl with just 2-3 fielders outside the inner ring, allowing batsmen
+                    to play lofted shots to score quick runs.</p>
+                    <div class='pie-graph span6' id='dc-bowlers-average-chart'>
+                        <p id="tip">Tip: Hover on the legends to get a clear picture</p>
+                    </div>
+                    <div class='pie-graph span6' id='dc-bowlers-striker-chart'>
+                        <p id="tip">Tip: Click bars to select and hover for more information</p>
+                    </div>
+                </div>
+                <div class='row'>
+                    <h3>Player performance over the years</h3>
+                    <p id="inline-horizontal"> But, all that said, the changing game hasn't kept the best away
+                        from consistently performing and taking wickets. Johnson, Steyn and Starc's lethal bouncers and swing,
+                    Malinga's toe crushers, Afridi's variations and Jadeja's tight lines have reaped good
+                    returns. The bowlers listed below show consistent wicket taking abilities for the past
+                    decade. </p>
+                    <div style="left:0;">
+                        <p id="tip">Tip: Select player from the drop down.</p>
+                        <select  style="margin-right:12px;" id="batsmanDropDown">
+                            <option value="0">Johnson</option>
+                            <option value="1">Malinga</option>
+                            <option value="2">Shakib Al Hasan</option>
+                            <option value="3">Afridi</option>
+                            <option value="4">Broad</option>
+                            <option value="5">Steyn</option>
+                            <option value="6">Ajmal</option>
+                            <option value="7">Jadeja</option>
+                            <option value="8">Starc</option>
+                            <option value="9">Southee</option>
+                        </select>
+                    </div>
+                    <div class='pie-graph span6' id='dc-bowlers-wickets-chart'>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    /**********************************
+     * Step0: Load data1 from json file *
+     **********************************/
+    var q = queue().defer(d3.json, "/bowlers/projects");
+
+    // load data1 from a csv file
+    q.await(function(error, data){
+        
+        data.forEach(function (d) {
+            d["SR"] = +d["SR"];
+            d["Ave"] = +d["Ave"];
+            d["Econ"] = +d["Econ"];
+            d["WktsDescending"] = +d["WktsDescending"];
+            d["5"] = +d["5"]
+        });
+
+        var teams = ["AUS", "BDESH", "ENG", "INDIA", "NZ", "PAK", "SA", "SL", "WI", "ZIM", "IRE"];
+
+        /******************************************************
+         * Step1: Create the dc.js chart objects & ling to div *
+         ******************************************************/
+        var bowlerAverageChart = dc.seriesChart("#dc-bowlers-series-chart");
+        var bowlerYearAverageChart = dc.compositeChart("#dc-bowlers-average-chart");
+        var bowlerStrikeAverageChart = dc.barChart("#dc-bowlers-striker-chart");
+        var bowlersWicketsChart =dc.barChart("#dc-bowlers-wickets-chart");
+        var facts = crossfilter(data);
+
+        /**
+         *  For the scatter plot
+         * **/
+
+        function remove_unwanted_teams(source_group) {
+            return {
+                all:function () {
+                    return source_group.all().filter(function(d) {
+                        return teams.indexOf(d.key[0]) >=0 && d.value.count >0;
+                    });
+                }
+            };
+        }
+
+        function reduceAddWickets(p, v) {
+            ++p.count;
+            p.econ += v["Econ"];
+            p.wickets += v["WktsDescending"];
+            return p;
+        }
+
+        function reduceRemoveWickets(p, v) {
+            --p.count;
+            p.econ -= v["Econ"];
+            p.wickets -= v["WktsDescending"];
+            return p;
+        }
+
+        function reduceInitialWickets() {
+            return {wickets: 0, econ: 0, count:0};
+        }
+
+        var wicketsDimension = facts.dimension(function (d) {
+            return [d["Team"],d["Player"]];
+        });
+        var wicketsGroup = wicketsDimension.group().reduce(reduceAddWickets, reduceRemoveWickets,
+            reduceInitialWickets);
+
+        wicketsGroup = remove_unwanted_teams(wicketsGroup);
+
+        var subChart = function(c) {
+            return dc.scatterPlot(c)
+                .brushOn(true)
+                .excludedOpacity(0.2);
+        };
+
+        bowlerAverageChart
+            .width(768)
+            .height(430)
+            .chart(subChart)
+            .x(d3.scale.ordinal().domain(teams))
+            .xUnits(dc.units.ordinal)
+            .yAxisLabel("Wickets")
+            .xAxisLabel("Teams")
+            .clipPadding(10)
+            .dimension(wicketsDimension)
+            .group(wicketsGroup)
+            .seriesAccessor(function(d) {return "Econ " + Math.round( d.value.econ/d.value.count);})
+            .keyAccessor(function(d) {return d.key[0];})
+            .valueAccessor(function(d) {
+                return d.value.wickets;})
+            .legend(dc.legend().x(700).y(50).itemHeight(13).gap(5).legendWidth(140).itemWidth(70))
+            .title(function (d) {
+                return d.key[1] + "\n" +
+                    "Wickets " + d.value.wickets + "\n" +
+                    "Team " + d.key[0]+ "\n";
+            });
+        bowlerAverageChart.yAxis().tickFormat(function(d) {return d3.format(',d')(d);});
+        bowlerAverageChart.margins().left += 10;
+
+
+
+
+        /**
+         * For the line chart
+         * **/
+
+        var players = ["MG Johnson","SL Malinga","Shakib Al Hasan","Shahid Afridi","SCJ Broad"
+        ,"DW Steyn", "Saeed Ajmal", "RA Jadeja", "MA Starc", "TG Southee"];
+
+        function remove_unwanted_players(source_group, player) {
+            return {
+                all:function () {
+                    return source_group.all().filter(function(d) {
+                        return d.key[1] ==player;
+                    });
+                }
+            };
+        }
+
+
+        var yearDimension = facts.dimension(function (d) {
+            return [d["Season"],d["Player"],d["Ave"]];
+        });
+        var yearGroup = yearDimension.group();
+
+        var seasons = ["2007/08", "2008/09", "2009/10", "2010/11", "2011/12", "2012/13", "2013/14", "2014/15",
+            "2015/16", "2016/17"];
+
+        var sub_seasons = ["2007/08", "2008/09", "2009/10", "2010/11", "2011/12", "2012/13", "2013/14", "2014/15",
+            "2015/16", "2016/17"];
+
+
+        var colors =["#1abc9c", "#2ecc71",
+            "#3498db", "#9b59b6", "#16a085", "#27ae60",
+            "#2980b9", "#8e44ad", "#2c3e50", "#f1c40f", "#d35400"];
+
+        bowlerYearAverageChart
+            .width(510)
+            .height(410)
+            .x(d3.scale.ordinal().domain(sub_seasons))
+            .xUnits(dc.units.ordinal)
+            .yAxisLabel("Average")
+            .xAxisLabel("Seasons")
+            .margins({top: 10, right: 10, bottom: 40, left: 40})
+            .legend(dc.legend().x(80).y(20).itemHeight(13).gap(5))
+            .renderHorizontalGridLines(true)
+            .compose(players.map(function (player, i) {
+                var newGroup = remove_unwanted_players(yearGroup, player);
+                return dc.lineChart(bowlerYearAverageChart)
+                    .dimension(yearDimension)
+                    .colors(colors[i])
+                    .group(newGroup, player)
+                    .keyAccessor(function (d) {
+                        console.log(i);
+                        return d.key[0];
+                    })
+                    .valueAccessor(function (d) {
+                        return d.key[2];
+                    });
+            }))
+            .brushOn(false)
+            .render();
+
+        /**
+         * Bar Chart of Strike Rates
+         * **/
+        function reduceAdd(p, v) {
+            ++p.count;
+            p.total += v["Econ"];
+            return p;
+        }
+
+        function reduceRemove(p, v) {
+            --p.count;
+            p.total -= v["Econ"];
+            return p;
+        }
+
+        function reduceInitial() {
+            return {count: 0, total: 0};
+        }
+
+        var strikeDimension = facts.dimension(function (d) {
+            return d["Season"] ;       // group or filter by Month
+        });
+        var strikeGroup =
+            strikeDimension.group().reduce(reduceAdd, reduceRemove, reduceInitial);
+
+        bowlerStrikeAverageChart
+            .width(510)
+            .height(390)
+            .dimension(strikeDimension)
+            .x(d3.scale.ordinal().domain(seasons))
+            .xUnits(dc.units.ordinal)
+            .margins({top: 10, right: 10, bottom: 30, left: 40})
+            .group(strikeGroup)
+            .colors(d3.scale.ordinal().domain(seasons).range(["#e5efe5", "#CCE0CC", "#b2d0b2", "#99c199",
+                "#7fb17f", "#66a266", "#4c924c", "#328332",
+                "#197319", "#006400","#004600"]))
+            .colorAccessor(function (d) {
+
+                if (seasons.indexOf(d.key) > -1) {
+                console.log(seasons.indexOf(d.key), d.key);
+                return seasons.indexOf(d.key);
+            }
+            })
+            .calculateColorDomain()
+            .yAxisLabel("Average Econ Rate")
+            .xAxisLabel("Seasons")
+
+            .gap(1)
+            .valueAccessor(function(p) {
+                return p.value.count > 0 ? p.value.total / p.value.count : 0; });
+
+
+        var wicketsDimension2 = facts.dimension(function (d) {
+            return [d["Season"],d["Player"],d["WktsDescending"]];
+        });
+        var wicketsGroup2 = wicketsDimension2.group();
+        var newWicketsGroup = remove_unwanted_players(wicketsGroup2, "MG Johnson");
+
+        bowlersWicketsChart
+            .width(968)
+            .height(210)
+            .dimension(wicketsDimension2)
+            .x(d3.scale.ordinal().domain(seasons))
+            .xUnits(dc.units.ordinal)
+            .margins({top: 10, right: 10, bottom: 40, left: 40})
+            .group(newWicketsGroup)
+            .keyAccessor(function (p) {
+                return p.key[0];
+            })
+            .valueAccessor(function(p) {
+                return p.key[2]})
+            .transitionDuration(500)
+            .renderlet(function(chart){
+                var colors =d3.scale.ordinal().domain([0,1,2,3,4,5,6,7,8,9,10])
+                    .range(["#e5e5ff","#ccccff","#b2b2ff","#9999ff","#7f7fff","#6666ff","#4c4cff"
+                    ,"#3232ff", "#1919ff","#0000e5","#0000cc"]);
+                chart.selectAll('rect.bar').each(function(d){
+                    d3.select(this).attr("style", "fill: " + colors(d.x));
+                });
+            })
+            .yAxisLabel("Wickets")
+            .xAxisLabel("Seasons")
+            .gap(1)
+            .elasticY(true);
+
+        function rerender_runsChart(group) {
+            bowlersWicketsChart
+                .width(968)
+                .height(210)
+                .dimension(wicketsDimension2)
+                .x(d3.scale.ordinal().domain(seasons))
+                .xUnits(dc.units.ordinal)
+                .margins({top: 10, right: 10, bottom: 40, left: 40})
+                .group(group)
+                .keyAccessor(function (p) {
+                    return p.key[0];
+                })
+                .valueAccessor(function(p) {
+                    return p.key[2]})
+                .transitionDuration(500)
+                .renderlet(function(chart){
+                    var colors =d3.scale.ordinal().domain([0,1,2,3,4,5,6,7,8,9,10])
+                        .range(["#e5e5ff","#ccccff","#b2b2ff","#9999ff","#7f7fff","#6666ff","#4c4cff"
+                    ,"#3232ff", "#1919ff","#0000e5","#0000cc"]);
+                    chart.selectAll('rect.bar').each(function(d){
+                        d3.select(this).attr("style", "fill: " + colors(d.x));
+                    });
+                })
+                .yAxisLabel("Wickets")
+                .xAxisLabel("Seasons")
+                .gap(1)
+                .elasticY(true);
+        }
+
+
+        dc.renderAll();
+
+        d3.select('#batsmanDropDown').on('change', function(){
+            var value = d3.select("#batsmanDropDown").node().value;
+            console.log(value);
+            var group = remove_unwanted_players(wicketsGroup2, players[value]);
+            rerender_runsChart(group);
+            dc.renderAll();
+        });
+
+    });
+
+
+    function updateData() {
+        dc.filterAll();
+        dc.renderAll();
+    }
+
+</script>
+
+</body>
+</html>
+
+
